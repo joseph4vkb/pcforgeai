@@ -1,0 +1,49 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+dist
+.output
+.vinxi
+.next
+.turbo
+.build
+
+# IDE files
+.vscode
+docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+compose.yaml
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testing
+coverage
+.nyc_output
+
+# Misc
+.codapt
+.codaptignore
+README.md
+docs
+*.md

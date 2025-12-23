@@ -1,0 +1,133 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model PcBuild {
+  id                 Int        @id @default(autoincrement())
+  category           String
+  budget             Int
+  parts              Json       // [{category, name, asin, price, specs}]
+  laptops            Json?      // [{name, brand, processor, ram, storage, gpu, price, url, specs}]
+  monitors           Json?      // [{name, brand, specs, price, url}]
+  headsets           Json?      // [{name, brand, specs, price, url}]
+  miniPcs            Json?      // [{name, brand, specs, price, url}]
+  totalCost          Int
+  compatibility      Float
+  compatibilityNotes String?
+  isFeatured         Boolean    @default(false)
+  createdAt          DateTime   @default(now())
+  userId             Int?
+  user               User?      @relation(fields: [userId], references: [id])
+  adminId            Int?
+  admin              Admin?     @relation(fields: [adminId], references: [id])
+  blogPosts          BlogPost[]
+}
+
+model AdminConfig {
+  id                  Int     @id @default(autoincrement())
+  openrouterApiKey    String
+  openrouterModel     String  @default("anthropic/claude-3.5-sonnet")
+  amazonAffiliateId   String
+  amazonPaAccessKey   String?
+  amazonPaSecretKey   String?
+  smtpHost            String?
+  smtpPort            Int?
+  smtpUser            String?
+  smtpPassword        String?
+  smtpSecure          Boolean @default(true)
+}
+
+model Admin {
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
+  hashedPassword String
+  builds         PcBuild[]
+}
+
+model User {
+  id                   Int       @id @default(autoincrement())
+  email                String    @unique
+  hashedPassword       String
+  emailVerified        Boolean   @default(false)
+  verificationToken    String?   @unique
+  resetPasswordToken   String?   @unique
+  resetPasswordExpires DateTime?
+  createdAt            DateTime  @default(now())
+  builds               PcBuild[]
+}
+
+model ProductCatalog {
+  id        Int      @id @default(autoincrement())
+  category  String   // CPU, GPU, Motherboard, RAM, Storage, PSU, Case, Cooler
+  name      String
+  asin      String   @unique
+  price     Int
+  url       String
+  imageUrl  String?
+  specs     Json     // Flexible specs object
+  createdAt DateTime @default(now())
+}
+
+model ClickMetric {
+  id             Int      @id @default(autoincrement())
+  targetType     String   // "Part", "Laptop", "Build"
+  targetId       String   // ASIN, URL, or Build ID
+  targetName     String   // Product/Build name for display
+  clicks         Int      @default(0)
+  lastClickedAt  DateTime @default(now())
+  metadata       Json?    // Additional data like category, price, etc.
+}
+
+model BlogPost {
+  id                 Int      @id @default(autoincrement())
+  slug               String   @unique
+  title              String
+  metaDescription    String
+  content            String   @db.Text // Markdown content
+  tags               Json     // Array of tag strings
+  category           String
+  seoKeywords        Json     // Array of SEO keyword strings
+  buildId            Int?
+  build              PcBuild? @relation(fields: [buildId], references: [id], onDelete: SetNull)
+  wordCount          Int
+  readingTime        Int      // in minutes
+  status             String   @default("draft") // "draft" or "published"
+  featuredImage      String?
+  imageSuggestions   Json?    // Array of image prompt objects
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  publishedAt        DateTime?
+}
+
+model BannerAd {
+  id             Int       @id @default(autoincrement())
+  name           String    // Internal-facing name (e.g., "Amazon GPU Sale - Homepage Top")
+  imageUrl       String?   // URL of the uploaded ad creative
+  destinationUrl String?   // Target URL for the ad click (with UTM parameters)
+  locationKey    String    // Where the ad appears (HOMEPAGE_TOP, PC_BUILD_SIDEBAR, etc.)
+  isActive       Boolean   @default(false) // true to display, false to hide
+  startDate      DateTime? // Ad displays after this date/time
+  endDate        DateTime? // Ad automatically hides after this date/time
+  priority       Int       @default(1) // Higher number = higher priority in rotation
+  htmlContent    String?   @db.Text // Alternative to imageUrl/destinationUrl for ad network tags
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  clicks         AdClick[]
+}
+
+model AdClick {
+  id        Int      @id @default(autoincrement())
+  adId      Int
+  ad        BannerAd @relation(fields: [adId], references: [id], onDelete: Cascade)
+  timestamp DateTime @default(now())
+  metadata  Json?    // Additional data like user IP, session ID, user agent, etc.
+}
+
