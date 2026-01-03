@@ -87,16 +87,16 @@ services:
         condition: service_started
       minio:
         condition: service_started
-    command: sh -c "pnpm install && pnpm dev -- --host --port 3000"
+    # command: sh -c "pnpm install && pnpm dev -- --host --port 3000"
     working_dir: /app
     # Volumes commented out for production - uncomment for development
-    volumes:
-      - ../:/app
-      - node-modules-cache:/app/node_modules:nocopy
+    # volumes:
+    #   - ../:/app
+    #   - node-modules-cache:/app/node_modules:nocopy
     # tmpfs:
     #   - /app/.pnpm-store:ro,size=1k
     environment:
-      - NODE_ENV=development
+      # - NODE_ENV=development
       - DATABASE_URL=postgresql://joseph4vkb:PUuRNb2Qw8B9bkxjwHhCIMEbIhL41gag@dpg-d534itn5r7bs73dijph0-a.oregon-postgres.render.com/pcforgeai
       - BASE_URL=http://nginx:8000
       - BASE_URL_OTHER_PORT=http://minio:[PORT]
